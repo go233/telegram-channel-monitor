@@ -41,20 +41,10 @@ if os.getenv("PROXY_ADDR"):
     }
 
 # 要监视下载的频道,名字（键名）无实际代码作用，不要重复就行
-channel = {
-    "Ryan": 1330252288,
-    "咸鱼的杂货铺 ASWL": -1001445018107,
-    "奇闻异录 与 沙雕时刻": -1001214996122,
-    "上班划水之沙雕图": -1001174703316,
-    "少女情怀总是诗": -1001336617732,
-    "摸鱼日常": -1001700560278,
-}
-"""
-    "咸鱼的杂货铺 ASWL": -1001445018107,
-    "奇闻异录 与 沙雕时刻": -1001214996122,
-    "上班划水之沙雕图": -1001174703316,
-    "少女情怀总是诗": -1001336617732
-"""
+try:
+    channel = json.loads(os.getenv("CHANNEL").replace(r'\n', '\n'))
+except Exception as e:
+    logger.error(f"load channel error:{e}")
 
 ext_to_image_prefix = {
     ".jpeg": "data:image/jpeg;base64,",
@@ -75,9 +65,9 @@ try:
     # client.session.set_dc(2, '149.154.167.50', 443)
     client.start()
 except Exception as e:
-    print(f"Exception while starting the client - {e}")
+    logger.error(f"Exception while starting the client - {e}")
 else:
-    print("Client started")
+    logger.info("Client started")
 
 # 列表推导式 获取频道对象列表
 channel_list = [channel[channel_name] for channel_name in channel]
