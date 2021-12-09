@@ -168,7 +168,7 @@ def post_image(image_base_64, msg, user_id):
         if res_json['success'] and res_json['data']['url'] != '':
             if msg:
                 res_json['data']['msg'] = msg
-            otifications(res_json['data'])
+            notifications(res_json['data'])
 
 
 def notifications(data):
