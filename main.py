@@ -122,11 +122,12 @@ async def download_image(message):
         return
     logger.debug(filename)
     logger.debug("下载完成")
+    logger.debug(message)
 
     # 下面注释的代码不知道什么原因无法在文件不存在的情况下新建文件
     # async with async_open(save_path + "1.txt", "a") as f:
     #     await f.write(filename + "\n")
-    send_img_hosting(filename, user_id)
+    send_img_hosting(filename, message.message, user_id)
 
 
 def get_user_id(message):
@@ -140,12 +141,12 @@ def get_user_id(message):
         return None
 
 
-def send_img_hosting(path, user_id):
+def send_img_hosting(path, msg, user_id):
     _, file_ext = os.path.splitext(path)
     image_base_64 = ext_to_image_prefix[file_ext] + get_base64_encoded_image(path)
     image_size = os.stat(path).st_size
     if image_size <= int(os.getenv("FILTER_IMG_SIZE")):
-        post_image(image_base_64, user_id)
+        post_image(image_base_64, msg, user_id)
 
 
 def get_base64_encoded_image(image_path):
@@ -153,7 +154,7 @@ def get_base64_encoded_image(image_path):
         return base64.b64encode(img_file.read()).decode('utf-8')
 
 
-def post_image(image_base_64, user_id):
+def post_image(image_base_64, msg, user_id):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36",
         "Content-Type": "application/json; charset=utf-8"
@@ -165,7 +166,9 @@ def post_image(image_base_64, user_id):
     if res.status_code == 200:
         res_json = json.loads(res.text)
         if res_json['success'] and res_json['data']['url'] != '':
-            notifications(res_json['data'])
+            if msg:
+                res_json['data']['msg'] = msg
+            otifications(res_json['data'])
 
 
 def notifications(data):
