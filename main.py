@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import os
 import requests
 import json
+import time
 
 
 load_dotenv()
@@ -70,11 +71,11 @@ else:
     logger.info("Client started")
 
 # 列表推导式 获取频道对象列表
-channel_list = [channel[channel_name] for channel_name in channel]
+channel_list = [PeerChannel(channel[channel_name]) for channel_name in channel]
 
 
 # 过滤出监视下载的频道，如果有媒体消息就下载
-@client.on(events.NewMessage(chats=channel_list))
+@client.on(events.NewMessage(from_users=channel_list))
 async def event_handler(event):
     # 获取对话
     # chat = await event.get_chat()
@@ -112,7 +113,10 @@ async def download_image(message):
     if not the_message_peer_id:
         return
     user_id = str(abs(the_message_peer_id))
-    new_save_path = save_path + os.sep + user_id
+    msg = message.message
+    if user_id=='1214996122' and  msg and '🔞NSFW' in msg:
+        return
+    new_save_path = save_path + os.sep + user_id +os.sep + time.strftime("%Y-%m-%d")
     if not os.path.exists(new_save_path):
         os.makedirs(new_save_path, exist_ok=True)
     # 这个方法下载成功后会返回文件的保存名
@@ -127,7 +131,7 @@ async def download_image(message):
     # 下面注释的代码不知道什么原因无法在文件不存在的情况下新建文件
     # async with async_open(save_path + "1.txt", "a") as f:
     #     await f.write(filename + "\n")
-    send_img_hosting(filename, message.message, user_id)
+    send_img_hosting(filename, msg, user_id)
 
 
 def get_user_id(message):
